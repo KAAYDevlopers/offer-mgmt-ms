@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,13 +15,12 @@ public class CouponsDTO {
     private String description;
     private String discountType;
     private Integer discountValue;
-//    private List<String> applicableVariantIds;
-//    private List<String> applicableCategories;
-    private String startDate;
-    private String endDate;
-    private OfferConditionDTO conditions;
+    private Double minOrderValue;
     private String couponCode;
     private Integer usageLimit;
     private Integer usagePerUser;
     private Boolean isActive;
+    private Set<CouponVariantDTO> applicableVariantIds;
+    private String startDate;
+    private String endDate;
 }

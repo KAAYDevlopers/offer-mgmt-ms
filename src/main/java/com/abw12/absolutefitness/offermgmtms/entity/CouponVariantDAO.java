@@ -11,15 +11,16 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "offervariant" ,schema = "offermgmt")
-public class OfferVariantDAO {
+@Table(name = "couponvariant" , schema = "offermgmt")
+public class CouponVariantDAO {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "offer_id")
-    private UUID offerId;
+    @Column(name = "coupon_id")
+    private UUID couponId;
 
     @Column(name = "variant_id")
     private String variantId;
