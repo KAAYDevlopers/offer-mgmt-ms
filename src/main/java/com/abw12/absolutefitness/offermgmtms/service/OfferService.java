@@ -22,11 +22,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class OfferMgmtService {
+public class OfferService {
     @Autowired
     private OffersRepository offersRepository;
-    //    @Autowired
-//    private CouponsRepository couponsRepository;
     @Autowired
     private OfferConditionRepository offerConditionRepository;
 
@@ -39,10 +37,8 @@ public class OfferMgmtService {
 
     @Autowired
     private OfferVariantMapper offerVariantMapper;
-//    @Autowired
-//    private CouponsMapper couponsMapper;
 
-    private static final Logger logger = LoggerFactory.getLogger(OfferMgmtService.class);
+    private static final Logger logger = LoggerFactory.getLogger(OfferService.class);
 
     @Transactional
     public String createOffers(OffersDTO request){
@@ -56,7 +52,7 @@ public class OfferMgmtService {
             OfferConditionDAO offerConditionToSave = offerConditionMapper.dtoToEntity(conditionDTO);
             offerConditionToSave.setOfferId(offerId);
             try{
-                OfferConditionDAO storedConditionData = offerConditionRepository.save(offerConditionToSave);
+                offerConditionRepository.save(offerConditionToSave);
             }catch (Exception e){
                 logger.error("error while adding condition data for offerId={} => ERROR :: {}",offerId.toString(),e.getMessage());
             }
@@ -69,7 +65,7 @@ public class OfferMgmtService {
             OfferVariantDAO offerVariantToSave = offerVariantMapper.dtoToEntity(offerVariantDTO);
             offerVariantToSave.setOfferId(offerId);
             try{
-                OfferVariantDAO storedOfferVariant = offerVariantRepository.save(offerVariantToSave);
+                offerVariantRepository.save(offerVariantToSave);
             }catch (Exception e){
                 logger.error("error while adding variant data for offerId={} => ERROR :: {}",offerId.toString(),e.getMessage());
             }
