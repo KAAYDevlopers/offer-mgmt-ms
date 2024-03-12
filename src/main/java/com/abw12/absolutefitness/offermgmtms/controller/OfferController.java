@@ -10,13 +10,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/offerMgmt")
-public class OfferMgmtController {
+@RequestMapping("/offer/v1")
+public class OfferController {
 
     @Autowired
     private OfferService offerService;
 
-    private static final Logger logger = LoggerFactory.getLogger(OfferMgmtController.class);
+    private static final Logger logger = LoggerFactory.getLogger(OfferController.class);
 
     @PostMapping("/addOffer")
     public ResponseEntity<?> addOffer(@RequestBody OffersDTO request){
@@ -24,11 +24,10 @@ public class OfferMgmtController {
      try{
         return new ResponseEntity<>(offerService.createOffers(request), HttpStatus.OK);
      }catch (Exception e){
-         logger.error("Exception while adding a new offer/coupon :: Error Message= {}",e.getMessage());
+         logger.error("Exception while adding a new offer :: Error Message= {}",e.getMessage());
          throw e;
      }
     }
-
 
     @GetMapping("/getOfferDetails/{offerId}")
     public ResponseEntity<?> getOfferDetails(@PathVariable String offerId){
