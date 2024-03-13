@@ -28,7 +28,7 @@ public class CouponController {
         try {
             return new ResponseEntity<>(couponService.addCoupon(request), HttpStatus.OK);
         } catch (Exception e) {
-            logger.error("Exception while adding a new coupon :: Error Message= {}", e.getMessage());
+            logger.error("Exception while adding a new coupon :: ERROR Msg={} => {}", e.getMessage(),e.getStackTrace());
             throw e;
         }
     }
@@ -42,6 +42,17 @@ public class CouponController {
             return new ResponseEntity<>(couponService.validateCoupon(request),HttpStatus.OK);
         }catch (Exception e){
             logger.error("Exception while validating coupon :: ERROR Msg={} => {}", e.getMessage(),e.getStackTrace());
+            throw e;
+        }
+    }
+
+    @GetMapping("/listCoupons/{userId}")
+    public ResponseEntity<?> listCoupons(@PathVariable String userId){
+        logger.info("Inside listCoupons rest API call.");
+        try{
+            return new ResponseEntity<>(couponService.listAllCoupons(userId),HttpStatus.OK);
+        }catch (Exception e){
+            logger.error("Exception in listCoupons :: ERROR Msg={} => {}", e.getMessage(),e.getStackTrace());
             throw e;
         }
     }
