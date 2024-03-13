@@ -7,9 +7,11 @@ import com.abw12.absolutefitness.offermgmtms.entity.CouponsDAO;
 import com.abw12.absolutefitness.offermgmtms.helper.Utils;
 import com.abw12.absolutefitness.offermgmtms.mapper.CouponVariantMapper;
 import com.abw12.absolutefitness.offermgmtms.mapper.CouponsMapper;
+import com.abw12.absolutefitness.offermgmtms.mapper.CustomerEntriesMapper;
 import com.abw12.absolutefitness.offermgmtms.repository.CouponVariantRepository;
 import com.abw12.absolutefitness.offermgmtms.repository.CouponsRepository;
 import com.abw12.absolutefitness.offermgmtms.repository.CustomerRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -37,6 +40,9 @@ public class CouponService {
 
     @Autowired
     private CouponVariantMapper couponVariantMapper;
+
+    @Autowired
+    private CustomerEntriesMapper customerEntriesMapper;
     @Autowired
     private Utils utils;
 
@@ -100,6 +106,59 @@ public class CouponService {
         logger.info("Coupon is applicable for variantIds={}",applicableVariantIds);
         return Map.of("result",new CouponValidationRes(couponDTO,applicableVariantIds,"success",HttpStatus.OK.getReasonPhrase()));
     }
+
+    @Transactional(readOnly = true)
+    public List<CouponsDTO> listAllCoupons(String userId){
+        logger.info("List all the coupons available requested for userId={}",userId);
+        if(StringUtils.isEmpty(userId)){
+            //guest user - fetch and list all the available coupons
+            List<CouponsDTO> couponsFromDB = fetchAllCouponsFromDB();
+            List<CouponsDTO> response = fetchAndMapApplicableVariantIds(couponsFromDB);
+            logger.info("Fetched all coupons available from DB :: {}",response);
+            return response;
+        }else{
+            //check the customerentries table to filter out the coupons user have already used before from the list
+            List<CouponsDTO> couponsFromDB = fetchAllCouponsFromDB();
+            //fetch couponIds already used by the customer
+            Set<String> utilizedCouponIds = customerRepository.getUserEntries(userId).stream()
+                    .map(entry -> customerEntriesMapper.entityToDto(entry))
+                    .map(CustomerDTO::getCouponId)
+                    .collect(Collectors.toSet());
+            if(!utilizedCouponIds.isEmpty()){
+                //filtering the couponId already present in the customerentries table which mark the already used coupons by the customer
+                List<CouponsDTO> filteredCoupons = couponsFromDB.stream()
+                        .filter(couponsDTO -> utilizedCouponIds.contains(couponsDTO.getCouponId()))
+                        .toList();
+                List<CouponsDTO> response = fetchAndMapApplicableVariantIds(filteredCoupons);
+                logger.info("Fetched all coupons available from DB after filtering the used coupons for userId={} :: {}",userId,response);
+                return response;
+            }
+            List<CouponsDTO> response = fetchAndMapApplicableVariantIds(couponsFromDB);
+            logger.info("Fetched all coupons available from DB for userId={} :: {}",userId,response);
+            return response;
+        }
+    }
+
+
+    private List<CouponsDTO> fetchAllCouponsFromDB(){
+        return couponsRepository.findAll().stream()
+                .map(couponsDAO -> couponsMapper.entityToDto(couponsDAO))
+                .toList();
+    }
+
+    private List<CouponsDTO> fetchAndMapApplicableVariantIds(List<CouponsDTO> couponsFromDB){
+        return couponsFromDB.stream().peek(couponsDTO -> {
+            String couponId = couponsDTO.getCouponId();
+            Set<CouponVariantDAO> applicableVariantIdsFromDB = couponVariantRepository.fetchApplicableVariantIds(UUID.fromString(couponId)).orElseThrow(() -> new InvalidDataRequestException(
+                    String.format("Exception while fetching applicable variant ids for coupon cannot find any variant id having couponId=%s", couponId)));
+            Set<CouponVariantDTO> variantIdsDTO = applicableVariantIdsFromDB.stream()
+                    .map(applicableVariantId -> couponVariantMapper.entityToDto(applicableVariantId))
+                    .collect(Collectors.toSet());
+            couponsDTO.setApplicableVariantIds(variantIdsDTO);
+        }).toList();
+    }
+
+
 
 
 
