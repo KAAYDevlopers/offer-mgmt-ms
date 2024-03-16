@@ -40,4 +40,5 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<String> handleInvalidRequestData(InvalidDataRequestException ex){
         return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
     }
+
 }
