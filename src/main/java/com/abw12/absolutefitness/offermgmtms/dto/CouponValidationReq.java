@@ -11,6 +11,6 @@ import java.util.Set;
 @NoArgsConstructor
 public class CouponValidationReq {
 
-    private String couponCode;
+    private String couponCode;  //end-user specific field
     private Set<String> variantIds;
 }

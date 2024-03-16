@@ -14,7 +14,7 @@ public class OffersDTO {
     private String description;
     private String discountType;
     private Integer discountValue;
-    private Set<OfferVariantDTO> applicableVariantIds;;
+    private Set<OfferVariantDTO> applicableVariantIds;
     private String startDate;
     private String endDate;
     private Set<OfferConditionDTO> conditions;

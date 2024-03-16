@@ -4,6 +4,7 @@ import com.abw12.absolutefitness.offermgmtms.advice.InvalidDataRequestException;
 import com.abw12.absolutefitness.offermgmtms.dto.*;
 import com.abw12.absolutefitness.offermgmtms.entity.CouponVariantDAO;
 import com.abw12.absolutefitness.offermgmtms.entity.CouponsDAO;
+import com.abw12.absolutefitness.offermgmtms.entity.CustomerDAO;
 import com.abw12.absolutefitness.offermgmtms.helper.Utils;
 import com.abw12.absolutefitness.offermgmtms.mapper.CouponVariantMapper;
 import com.abw12.absolutefitness.offermgmtms.mapper.CouponsMapper;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -127,7 +129,7 @@ public class CouponService {
             if(!utilizedCouponIds.isEmpty()){
                 //filtering the couponId already present in the customerentries table which mark the already used coupons by the customer
                 List<CouponsDTO> filteredCoupons = couponsFromDB.stream()
-                        .filter(couponsDTO -> utilizedCouponIds.contains(couponsDTO.getCouponId()))
+                        .filter(couponsDTO -> !utilizedCouponIds.contains(couponsDTO.getCouponId()))
                         .toList();
                 List<CouponsDTO> response = fetchAndMapApplicableVariantIds(filteredCoupons);
                 logger.info("Fetched all coupons available from DB after filtering the used coupons for userId={} :: {}",userId,response);
@@ -138,6 +140,17 @@ public class CouponService {
             return response;
         }
     }
+
+
+    public String markUserEntryForCoupon(CustomerDTO req){
+        logger.info("mark UserId={} entry for utilization of coupon code with couponId={} ",req.getUserId(),req.getCouponId());
+        CustomerDAO dataToStore = customerEntriesMapper.dtoToEntity(req);
+        dataToStore.setCouponUsedDate(OffsetDateTime.parse(OffsetDateTime.now().format(Utils.dateFormat())));
+        CustomerDAO dataStoredInDb = customerRepository.save(dataToStore);
+        logger.info("marked userId={} for used coupon => {}",req.getUserId(),dataStoredInDb);
+        return String.format("Successfully marked the userId=%s for utilization of the coupon with couponId=%s",req.getUserId(),req.getCouponId());
+    }
+
 
 
     private List<CouponsDTO> fetchAllCouponsFromDB(){
