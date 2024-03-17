@@ -1,5 +1,6 @@
 package com.abw12.absolutefitness.offermgmtms.helper;
 
+import com.abw12.absolutefitness.offermgmtms.advice.InvalidDataRequestException;
 import com.abw12.absolutefitness.offermgmtms.constants.Constants;
 import com.abw12.absolutefitness.offermgmtms.dto.*;
 import com.abw12.absolutefitness.offermgmtms.entity.OfferConditionDAO;
@@ -13,9 +14,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -46,10 +45,16 @@ public class Utils {
                 request.getCategoryName().equalsIgnoreCase(offerCondition.getCategoryName())
                         && request.getBrandName().equalsIgnoreCase(offerCondition.getBrandName())
                         && request.getProductName().equalsIgnoreCase(offerCondition.getProductName())
-                        && request.getVariantName().equalsIgnoreCase(offerCondition.getVariantName())
+                        && matchVariantName(request.getVariantName(),offerCondition.getVariantName())
         ).findFirst();
 
         return matchingCondition.isPresent();
+    }
+
+    public boolean matchVariantName(String requestedVariantName,String conditionVariantList){
+        String[] split = conditionVariantList.split(",");
+        Set<String> variantSet = new HashSet<>(List.of(split));
+        return variantSet.contains(requestedVariantName);
     }
 
     public CalcOfferResponse calculateOnSalePrice(OffersDAO offerData, BigDecimal buyPrice) {
@@ -57,26 +62,28 @@ public class Utils {
 
         String discountType = offerData.getDiscountType();
         BigDecimal hundred = new BigDecimal(Constants.HUNDRED);
-        //calculate price by percentage
-        if(discountType.equalsIgnoreCase(Constants.DISCOUNT_TYPE_PERCENT)){
-
-            BigDecimal discountValue = new BigDecimal(offerData.getDiscountValue());
-            // Convert discount rate from percentage to fraction
-            BigDecimal  discountRate = discountValue.divide(hundred);
-            // Calculate the discount amount
-            BigDecimal discountAmount = buyPrice.multiply(discountRate);
-            // Calculate the on-sale price
-            BigDecimal onSalePrice = buyPrice.subtract(discountAmount);
-            // rounding the on-sale price by 2 decimal
-            response.setOnSalePrice(onSalePrice.setScale(2, RoundingMode.HALF_UP));
-        }
-        //calculate price by fixed amount
-        if(discountType.equalsIgnoreCase(Constants.DISCOUNT_TYPE_FIXED)){
-            // fixed price to substract in Bigdecimal
-            BigDecimal fixedAmount = new BigDecimal(offerData.getDiscountValue());
-            // Calculate the on-sale price for fixed amount
-            BigDecimal onSalePrice = buyPrice.subtract(fixedAmount);
-            response.setOnSalePrice(onSalePrice);
+        switch (discountType){
+            //calculate price by percentage
+            case Constants.DISCOUNT_TYPE_PERCENT -> {
+                BigDecimal discountValue = new BigDecimal(offerData.getDiscountValue());
+                // Convert discount rate from percentage to fraction
+                BigDecimal  discountRate = discountValue.divide(hundred);
+                // Calculate the discount amount
+                BigDecimal discountAmount = buyPrice.multiply(discountRate);
+                // Calculate the on-sale price
+                BigDecimal onSalePrice = buyPrice.subtract(discountAmount);
+                // rounding the on-sale price by 2 decimal
+                response.setOnSalePrice(onSalePrice.setScale(2, RoundingMode.HALF_UP));
+            }
+            //calculate price by fixed amount
+            case Constants.DISCOUNT_TYPE_FIXED -> {
+                // fixed price to substract in Bigdecimal
+                BigDecimal fixedAmount = new BigDecimal(offerData.getDiscountValue());
+                // Calculate the on-sale price for fixed amount
+                BigDecimal onSalePrice = buyPrice.subtract(fixedAmount);
+                response.setOnSalePrice(onSalePrice);
+            }
+            default -> throw new InvalidDataRequestException(String.format("Invalid value received for discountType=%s while calculating onSalePrice",discountType));
         }
         response.setMsg(String.format("Successfully calculated the discount and updated onSalePrice by applying the offer with offerId=%s",offerData.getOfferId()));
         response.setStatusCode(HttpStatus.OK.getReasonPhrase());

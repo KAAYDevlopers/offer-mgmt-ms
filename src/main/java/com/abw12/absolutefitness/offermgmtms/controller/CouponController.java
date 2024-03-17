@@ -4,7 +4,7 @@ import com.abw12.absolutefitness.offermgmtms.dto.CouponValidationReq;
 import com.abw12.absolutefitness.offermgmtms.dto.CouponsDTO;
 import com.abw12.absolutefitness.offermgmtms.dto.CustomerDTO;
 import com.abw12.absolutefitness.offermgmtms.helper.Utils;
-import com.abw12.absolutefitness.offermgmtms.mapper.CustomerDTOMapper;
+import com.abw12.absolutefitness.offermgmtms.mapper.RequestDTOMapper;
 import com.abw12.absolutefitness.offermgmtms.service.CouponService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +71,7 @@ public class CouponController {
             logger.error("Invalid data request for markCouponUtilized :: request={}",req);
             return new ResponseEntity<>("invalid data request for markCouponUtilized",HttpStatus.BAD_REQUEST);
         }
-        CustomerDTO requestData = CustomerDTOMapper.mapRequestParamsToDTO(req);
+        CustomerDTO requestData = RequestDTOMapper.mapRequestParamsToCustomerDTO(req);
         try{
             return new ResponseEntity<>(couponService.markUserEntryForCoupon(requestData),HttpStatus.OK);
         }catch (Exception e){

@@ -3,6 +3,7 @@ package com.abw12.absolutefitness.offermgmtms.service;
 import com.abw12.absolutefitness.offermgmtms.advice.InvalidDataRequestException;
 import com.abw12.absolutefitness.offermgmtms.dto.CalcOfferRequest;
 import com.abw12.absolutefitness.offermgmtms.dto.CalcOfferResponse;
+import com.abw12.absolutefitness.offermgmtms.dto.OfferVariantDTO;
 import com.abw12.absolutefitness.offermgmtms.dto.OffersDTO;
 import com.abw12.absolutefitness.offermgmtms.entity.OfferConditionDAO;
 import com.abw12.absolutefitness.offermgmtms.entity.OfferVariantDAO;
@@ -17,6 +18,7 @@ import com.abw12.absolutefitness.offermgmtms.repository.OffersRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -124,8 +126,18 @@ public class OfferService {
             return utils.calculateOnSalePrice(offerData, request.getBuyPrice());
         }else{
             logger.error("No Condition match the offer for the given request to calculate discount with offerId={} :: offerCondition found in DB :: {}",request.getOfferId(),offerConditions);
-            return null;
+            return new CalcOfferResponse(String.format("No Condition match the offer for the given request to calculate discount with offerId=%s",
+                    request.getOfferId()), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),null);
         }
+    }
+
+    @Transactional
+    public OfferVariantDTO mapVariantIdToOffer(OfferVariantDTO request){
+        logger.info("Mapping the variantId to offerId");
+        OfferVariantDAO offerVariantData = offerVariantMapper.dtoToEntity(request);
+        OfferVariantDAO variantMappedToOffer = offerVariantRepository.save(offerVariantData);
+        logger.info("Successfully mapped the variant to offer => {}",variantMappedToOffer);
+        return offerVariantMapper.entityToDto(variantMappedToOffer);
     }
 
 }
