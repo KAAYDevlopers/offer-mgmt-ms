@@ -4,13 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
+import java.math.BigDecimal;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CouponValidationReq {
+public class CalcOfferResponse {
+    private String msg;
+    private String statusCode;
+    private BigDecimal onSalePrice;
 
-    private String couponCode;  //end-user specific field
-    private Set<String> variantIds;
 }

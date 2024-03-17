@@ -11,4 +11,5 @@ public class OfferVariantDTO {
 
     private String id;
     private String variantId;
+    private String offerId;
 }
