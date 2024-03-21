@@ -32,4 +32,6 @@ public class OffersDAO {
 
     @Column(name = "end_date")
     private OffsetDateTime endDate;
+    @Column(name = "is_active")
+    private Boolean isActive; //offer validity
 }

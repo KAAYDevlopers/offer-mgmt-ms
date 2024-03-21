@@ -118,6 +118,13 @@ public class OfferService {
         UUID offerId = UUID.fromString(request.getOfferId());
         OffersDAO offerData = offersRepository.findById(offerId).orElseThrow(() -> new InvalidDataRequestException(
                 String.format("Exception while fetching Offer cannot find offer data with offerId=%s", offerId)));
+        //check if the offer is currently active
+        if(!offerData.getIsActive()){
+            logger.error("offer with offerId={} is expired or currently not active",request.getOfferId());
+            return new CalcOfferResponse(String.format("offer with offerId=%s is expired or currently not active",
+                    request.getOfferId()), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),null);
+        }
+
         //fetch conditions for the given offer from db
         Set<OfferConditionDAO> offerConditions = offerConditionRepository.getConditions(offerId).orElseThrow(() -> new InvalidDataRequestException(
                 String.format("Exception while fetching OfferCondition cannot find any condition data with offerId=%s", offerId)));
@@ -138,6 +145,26 @@ public class OfferService {
         OfferVariantDAO variantMappedToOffer = offerVariantRepository.save(offerVariantData);
         logger.info("Successfully mapped the variant to offer => {}",variantMappedToOffer);
         return offerVariantMapper.entityToDto(variantMappedToOffer);
+    }
+
+    @Transactional
+    public String deleteOffer(String id){
+        logger.info("Deleting the offer with offerId={}",id);
+        UUID offerId = UUID.fromString(id);
+        //first delete child entities
+        Integer deleteOfferConditionItems = offerConditionRepository.deleteOfferConditionByOfferId(offerId).orElseThrow(() -> new InvalidDataRequestException(
+                String.format("Exception while deleting OfferCondition cannot find any condition data with offerId=%s", offerId)));;
+        logger.info("Deleted {} OfferCondition record for offerId={}",deleteOfferConditionItems,offerId);
+
+        Integer deleteOfferVariantItems = offerVariantRepository.deleteOfferVariantByOfferId(offerId).orElseThrow(() -> new InvalidDataRequestException(
+                String.format("Exception while deleting OfferVariant record for offer with offerId=%s", offerId)));
+        logger.info("Deleted {} OfferVariant record for offerId={}",deleteOfferVariantItems,offerId);
+
+        //then delete main offer record
+        offersRepository.deleteById(offerId);
+        logger.info("Successfully deleted the offer with offerId={}",offerId);
+
+        return String.format("Successfully deleted the offer with offerId=%s",offerId);
     }
 
 }
