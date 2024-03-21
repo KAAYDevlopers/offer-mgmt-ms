@@ -74,4 +74,15 @@ public class OfferController {
             throw e;
         }
     }
+
+    @DeleteMapping("/deleteOffer/{offerId}")
+    public ResponseEntity<?> deleteOffer(@PathVariable String offerId){
+        logger.info("Inside deleteOffer Rest API");
+        try{
+            return new ResponseEntity<>(offerService.deleteOffer(offerId), HttpStatus.OK);
+        }catch (Exception e){
+            logger.error("Exception while delete an offer with offerId={} :: ERROR Msg={} => {}",offerId,e.getMessage(),e.getStackTrace());
+            throw e;
+        }
+    }
 }

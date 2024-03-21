@@ -20,6 +20,7 @@ public class OffersDTO {
     private Set<OfferVariantDTO> applicableVariantIds;
     private String startDate;
     private String endDate;
+    private Boolean isActive;
     @NotNull
     private Set<OfferConditionDTO> conditions;
 }
