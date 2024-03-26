@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: offer-mgmt-ms
+  name: offer-management-ms
 spec:
   selector:
     app: {{ .Values.app.name }}
