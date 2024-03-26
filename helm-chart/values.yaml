@@ -1,13 +1,13 @@
 app:
   replicas: 1
-  name: offer-mgmt-ms
+  name: offer-management-ms
   configPath: /app/config
   port: 8087
 configMap:
-  name: offer-mgmt-ms-config
+  name: offer-management-config
 
 image:
-  repository: abw12/offer-mgmt-ms # update image name
+  repository: abw12/offer-management-ms # update image name
   tag: v1
 postgres:
   username: ${DB_USERNAME}

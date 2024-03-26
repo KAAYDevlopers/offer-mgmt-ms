@@ -1,4 +1,4 @@
 apiVersion: v2
-name: offer-mgmt-ms
+name: offer-management-ms
 description: Helm chart for offer-mgmt-ms
 version: 1.0.0-SNAPSHOT
