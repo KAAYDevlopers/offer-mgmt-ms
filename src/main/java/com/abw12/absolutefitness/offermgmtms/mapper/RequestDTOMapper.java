@@ -2,10 +2,11 @@ package com.abw12.absolutefitness.offermgmtms.mapper;
 
 
 import com.abw12.absolutefitness.offermgmtms.constants.Constants;
+import com.abw12.absolutefitness.offermgmtms.dto.CouponValidationReq;
 import com.abw12.absolutefitness.offermgmtms.dto.CustomerDTO;
 import com.abw12.absolutefitness.offermgmtms.dto.OfferVariantDTO;
 
-import java.util.Map;
+import java.util.*;
 
 public class RequestDTOMapper {
 
@@ -38,6 +39,21 @@ public class RequestDTOMapper {
             request.setOfferId(String.valueOf(params.get(Constants.OFFER_ID)));
         if(params.containsKey(Constants.VARIANT_ID))
             request.setVariantId(String.valueOf(params.get(Constants.VARIANT_ID)));
+
+        return request;
+    }
+
+    public static CouponValidationReq mapRequestParamsToCouponValidationReq(Map<String ,Object> params){
+        CouponValidationReq request = new CouponValidationReq();
+        if(params == null)
+            return request;
+
+        if(params.containsKey("couponCode"))
+            request.setCouponCode(String.valueOf(params.get(Constants.OFFER_ID)));
+        if(params.containsKey("variantIds")){
+            List<String> variantids = Collections.singletonList(params.get("variantIds").toString());
+            request.setVariantIds(new HashSet<>(variantids));
+        }
 
         return request;
     }

@@ -1,6 +1,7 @@
 package com.abw12.absolutefitness.offermgmtms.service;
 
 import com.abw12.absolutefitness.offermgmtms.advice.InvalidDataRequestException;
+import com.abw12.absolutefitness.offermgmtms.constants.ErrorCode;
 import com.abw12.absolutefitness.offermgmtms.dto.*;
 import com.abw12.absolutefitness.offermgmtms.entity.CouponVariantDAO;
 import com.abw12.absolutefitness.offermgmtms.entity.CouponsDAO;
@@ -96,14 +97,14 @@ public class CouponService {
                 CouponsDAO latestCouponDataStored = couponsRepository.save(updatedCoupon);
                 logger.info("successfully mark the coupon as in-active :: latest coupon data => {}",latestCouponDataStored);
             }
-            return Map.of("result", new ErrorResponse("coupon is not active or usage limit has been exceeded for this coupon", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase()));
+            return Map.of("result", new ErrorResponse("coupon is not active or usage limit has been exceeded for this coupon", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), ErrorCode.COUPON_INACTIVE_ERROR_CODE));
         }
 
         //fetch only applicable variant id on which this coupon can be applied
         Set<CouponVariantDTO> applicableVariantIds = utils.filterApplicableVariants(couponDTO, req);
         if(applicableVariantIds == null || applicableVariantIds.isEmpty()){
             logger.info("No variant requested exist in the coupons applicable variantId list");
-            return Map.of("result",new ErrorResponse("coupon code does not apply to any variant requested", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase()));
+            return Map.of("result",new ErrorResponse("coupon code does not apply to any variant requested", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),ErrorCode.COUPON_NOT_APPLICABLE_ERROR_CODE));
         }
         logger.info("Coupon is applicable for variantIds={}",applicableVariantIds);
         return Map.of("result",new CouponValidationRes(couponDTO,applicableVariantIds,"success",HttpStatus.OK.getReasonPhrase()));
@@ -142,6 +143,10 @@ public class CouponService {
     }
 
 
+    /**
+     * @param req request data include the couponId and userId to mark the used coupon once that user utilized the coupon after any purchase
+     * @return confirmation of mark the entry in db
+     */
     public String markUserEntryForCoupon(CustomerDTO req){
         logger.info("mark UserId={} entry for utilization of coupon code with couponId={} ",req.getUserId(),req.getCouponId());
         CustomerDAO dataToStore = customerEntriesMapper.dtoToEntity(req);

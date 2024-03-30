@@ -6,6 +6,7 @@ import com.abw12.absolutefitness.offermgmtms.dto.CustomerDTO;
 import com.abw12.absolutefitness.offermgmtms.helper.Utils;
 import com.abw12.absolutefitness.offermgmtms.mapper.RequestDTOMapper;
 import com.abw12.absolutefitness.offermgmtms.service.CouponService;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +42,12 @@ public class CouponController {
 
     @GetMapping("/validateCoupon")
     public ResponseEntity<?> validateCoupon(@RequestParam("couponCode") String couponCode,
-                                            @RequestParam("variantIds") List<String> variantIds){
+                                            @RequestParam("variantId") List<String> variantIds){
         logger.info("Inside validateCoupon rest API call : couponCode={} => variantId={}",couponCode,variantIds);
+        if(StringUtils.isEmpty(couponCode) || (variantIds == null || variantIds.isEmpty())){
+            logger.error("Invalid data request for applyCouponCode couponCode or variantId list is empty");
+            return new ResponseEntity<>("Invalid data request for applyCouponCode",HttpStatus.BAD_REQUEST);
+        }
         CouponValidationReq request = new CouponValidationReq(couponCode,new HashSet<>(variantIds));
         try{
             return new ResponseEntity<>(couponService.validateCoupon(request),HttpStatus.OK);
