@@ -18,7 +18,7 @@ public class CouponsDTO {
     private String discountType;
     @NotNull
     private Integer discountValue;
-    private Double minOrderValue;
+    private Double minOrderValue; //cartTotal should be above then this value to the coupon
     private String couponCode;
     @NotNull
     private Integer usageLimit;
